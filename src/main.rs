@@ -26,15 +26,22 @@ fn main() {
     // Limit to max ~60 fps update rate
     window.set_target_fps(60);
 
-    let world = lfisiks::World::new(WIDTH, HEIGHT);
+    let mut world = lfisiks::World::new(WIDTH, HEIGHT);
+    world.change_pixel(0, lfisiks::Id::Sand);
     world.id_lize();
 
     const SAND: u32 = 0x00ffc433;
     const EMPTY: u32 = 0x00000000;
 
+    for i in 0..HEIGHT * WIDTH {
+        println!("{:?}", lfisiks::buffer_to_point(i, WIDTH));
+    }
+
+    println!("{:?}", lfisiks::point_to_buffer((6, 3), WIDTH, HEIGHT));
+
     while window.is_open() && !window.is_key_down(Key::Escape) {
         if let Some((x, y)) = window.get_mouse_pos(MouseMode::Discard) {
-            if let Some(p) = lfisiks::point_to_buffer(x, y, WIDTH, HEIGHT) {
+            if let Some(p) = lfisiks::point_to_buffer((x as usize, y as usize), WIDTH, HEIGHT) {
                 if window.get_mouse_down(MouseButton::Left) {
                     buffer[p] = SAND;
                 }
@@ -45,8 +52,12 @@ fn main() {
             }
         }
 
+        if let Some(p) = lfisiks::point_to_buffer((6, 3), WIDTH, HEIGHT) {
+            buffer[p] = 0x00FFFFFF;
+        }
+
         for x in 0..WIDTH + 32 {
-            if let Some(p) = lfisiks::point_to_buffer(x as f32, x as f32, WIDTH, HEIGHT) {
+            if let Some(p) = lfisiks::point_to_buffer((x, x), WIDTH, HEIGHT) {
                 buffer[p] = 0x0000FF00;
             }
         }

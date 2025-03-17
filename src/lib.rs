@@ -1,13 +1,13 @@
-pub fn point_to_buffer(x: f32, y: f32, rows: usize, cols: usize) -> Option<usize> {
-    if x <= 0.0 || y <= 0.0 || x >= rows as f32 || y >= cols as f32 {
+pub fn point_to_buffer(p: (usize, usize), cols: usize, rows: usize) -> Option<usize> {
+    let (x, y): (usize, usize) = p;
+    if x <= 0 || y <= 0 || x >= cols || y >= rows {
         return None;
     }
-    let (x, y): (usize, usize) = (x.floor() as usize, y.floor() as usize);
-    Some(y * rows + x)
+    Some(y * cols + x)
 }
 
-pub fn buffer_to_point(p: usize, rows: usize, cols: usize) -> (usize, usize) {
-    (p % cols, p / rows)
+pub fn buffer_to_point(p: usize, cols: usize) -> (usize, usize) {
+    (p % cols, p / cols)
 }
 
 pub enum Id {
@@ -17,29 +17,37 @@ pub enum Id {
 }
 
 pub struct World {
-    rows: usize,
     cols: usize,
+    rows: usize,
     buffer: Vec<Box<dyn Pixel>>,
 }
 
 impl World {
-    pub fn new(rows: usize, cols: usize) -> World {
+    pub fn new(cols: usize, rows: usize) -> World {
         let mut buffer: Vec<Box<dyn Pixel>> = Vec::new();
-        for r in 0..rows {
-            for c in 0..cols {
-                buffer.push(Box::new(Empty::new((r, c))))
+        for y in 0..rows {
+            for x in 0..cols {
+                buffer.push(Box::new(Empty::new((x, y))))
             }
         }
 
-        World { rows, cols, buffer }
+        World { cols, rows, buffer }
     }
 
     pub fn id_lize(&self) {
+        let mut counter = 0;
         for i in &self.buffer {
             match i.id() {
-                Id::Empty => println!("empty {:?}", i.get_pos()),
-                _ => println!("not emptry"),
+                Id::Empty => print!("empty {:?}", i.get_pos()),
+                Id::Sand => print!("sand {:?}", i.get_pos()),
+                _ => print!("not emptry or sandy"),
             }
+            println!("{:?}", buffer_to_point(counter, self.cols),);
+            assert_eq!(
+                format!("{:?}", buffer_to_point(counter, self.cols)),
+                format!("{:?}", i.get_pos())
+            );
+            counter += 1;
         }
     }
 
@@ -52,7 +60,7 @@ impl World {
     }
 
     pub fn change_pixel(&mut self, p: usize, id: Id) {
-        self.buffer[p] = Self::create_pixel(id, buffer_to_point(p, self.rows, self.cols));
+        self.buffer[p] = Self::create_pixel(id, buffer_to_point(p, self.rows));
     }
 }
 
