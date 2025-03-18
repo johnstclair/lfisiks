@@ -242,13 +242,33 @@ impl Pixel for Water {
             {
                 return Some((self.pos.0 - 1, self.pos.1 + 1));
             }
-            return Some((self.pos.0 - 1, self.pos.1));
+            let mut offset = 2;
+            while let Some(Id::Empty) =
+                world.get_id_of(((self.pos.0 as i32 - offset).max(0) as usize, self.pos.1))
+            {
+                if let Some(Id::Empty) =
+                    world.get_id_of(((self.pos.0 as i32 - offset).max(0) as usize, self.pos.1 + 1))
+                {
+                    return Some((self.pos.0 - 1, self.pos.1));
+                }
+                offset += 1;
+            }
         }
         if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1)) {
             if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1 + 1)) {
                 return Some((self.pos.0 + 1, self.pos.1 + 1));
             }
-            return Some((self.pos.0 + 1, self.pos.1));
+            let mut offset = 2;
+            while let Some(Id::Empty) =
+                world.get_id_of(((self.pos.0 as i32 + offset).max(0) as usize, self.pos.1))
+            {
+                if let Some(Id::Empty) =
+                    world.get_id_of(((self.pos.0 as i32 + offset).max(0) as usize, self.pos.1 + 1))
+                {
+                    return Some((self.pos.0 + 1, self.pos.1));
+                }
+                offset += 1;
+            }
         }
         None
     }
