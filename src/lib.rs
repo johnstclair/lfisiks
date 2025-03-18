@@ -35,15 +35,17 @@ impl World {
     }
 
     pub fn update(&mut self) {
-        for i in self.buffer.iter().rev().filter(|i| match i.id() {
-            Id::Sand => true,
-            _ => false,
-        }) {
-            if let Some(p) = i.update(&self) {
-                if let Some(b1) = point_to_buffer(p, self.cols, self.rows) {
-                    if let Some(b2) = point_to_buffer(i.get_pos(), self.cols, self.rows) {
-                        self.buffer.swap(b1, b2);
-                    }
+        for i in (0..self.buffer.len()).rev() {
+            match self.buffer[i].id() {
+                Id::Sand => (),
+                _ => continue,
+            }
+            if let Some(p) = &self.buffer[i].update(&*self) {
+                if let Some(b1) = point_to_buffer(*p, self.cols, self.rows) {
+                    println!("{b1} {i}");
+                    self.id_lize();
+                    self.buffer[i].set_pos(*p);
+                    self.buffer.swap(b1, i);
                 }
             }
         }
@@ -51,6 +53,13 @@ impl World {
 
     pub fn buffer(&self) -> Vec<u32> {
         self.buffer.iter().map(|item| item.get_color()).collect()
+    }
+
+    pub fn get_id_of(&self, p: (usize, usize)) -> Option<Id> {
+        match point_to_buffer(p, self.cols, self.rows) {
+            Some(i) => Some(self.buffer[i].id()),
+            None => None,
+        }
     }
 
     fn create_pixel(id: Id, pos: (usize, usize)) -> Box<dyn Pixel> {
@@ -67,7 +76,6 @@ impl World {
 
     pub fn id_lize(&self) {
         let mut counter = 1;
-        let mut test = 0;
         println!("--------");
         for i in &self.buffer {
             if counter == i.get_pos().1 {
@@ -87,7 +95,7 @@ impl World {
 pub trait Pixel {
     fn update(&self, world: &World) -> Option<(usize, usize)>;
     fn id(&self) -> Id;
-    fn set_pos(self, pos: (usize, usize)) -> (usize, usize);
+    fn set_pos(&mut self, pos: (usize, usize)) -> (usize, usize);
     fn get_pos(&self) -> (usize, usize);
     fn get_color(&self) -> u32;
 }
@@ -113,7 +121,7 @@ impl Pixel for Empty {
     fn id(&self) -> Id {
         Id::Empty
     }
-    fn set_pos(mut self, pos: (usize, usize)) -> (usize, usize) {
+    fn set_pos(&mut self, pos: (usize, usize)) -> (usize, usize) {
         self.pos = pos;
         pos
     }
@@ -141,12 +149,15 @@ impl Sand {
 
 impl Pixel for Sand {
     fn update(&self, world: &World) -> Option<(usize, usize)> {
-        Some((12, 12))
+        if let Some(Id::Empty) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
+            return Some((self.pos.0, self.pos.1 + 1));
+        }
+        None
     }
     fn id(&self) -> Id {
         Id::Sand
     }
-    fn set_pos(mut self, pos: (usize, usize)) -> (usize, usize) {
+    fn set_pos(&mut self, pos: (usize, usize)) -> (usize, usize) {
         self.pos = pos;
         pos
     }
@@ -174,12 +185,12 @@ impl Stone {
 
 impl Pixel for Stone {
     fn update(&self, world: &World) -> Option<(usize, usize)> {
-        Some((12, 12))
+        None
     }
     fn id(&self) -> Id {
         Id::Stone
     }
-    fn set_pos(mut self, pos: (usize, usize)) -> (usize, usize) {
+    fn set_pos(&mut self, pos: (usize, usize)) -> (usize, usize) {
         self.pos = pos;
         pos
     }

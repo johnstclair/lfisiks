@@ -24,19 +24,17 @@ fn main() {
     });
 
     // Limit to max ~60 fps update rate
-    window.set_target_fps(60);
+    window.set_target_fps(10);
 
     let mut world = lfisiks::World::new(WIDTH, HEIGHT);
     world.change_pixel(0, Id::Sand);
+    world.change_pixel(5, Id::Sand);
 
     for x in 0..WIDTH + 32 {
         if let Some(p) = lfisiks::point_to_buffer((x, x + 5), WIDTH, HEIGHT) {
             world.change_pixel(p, Id::Stone);
         }
     }
-
-    const SAND: u32 = 0x00ffc433;
-    const EMPTY: u32 = 0x00000000;
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         if let Some((x, y)) = window.get_mouse_pos(MouseMode::Discard) {
@@ -57,7 +55,7 @@ fn main() {
         }
 
         buffer = world.buffer();
-        world = world.update();
+        world.update();
 
         // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
         window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
