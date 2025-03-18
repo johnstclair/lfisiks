@@ -3,8 +3,14 @@ use minifb::{Key, MouseButton, MouseMode, Scale, ScaleMode, Window, WindowOption
 
 use lfisiks::Id;
 
-const WIDTH: usize = 10;
-const HEIGHT: usize = 8;
+const WIDTH: usize = 100;
+const HEIGHT: usize = 100;
+
+pub enum Paint {
+    Sand,
+    Water,
+    Stone,
+}
 
 fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
@@ -23,12 +29,13 @@ fn main() {
         panic!("{}", e);
     });
 
-    // Limit to max ~60 fps update rate
-    window.set_target_fps(10);
+    window.set_target_fps(30);
+
+    let mut paint = Paint::Sand;
 
     let mut world = lfisiks::World::new(WIDTH, HEIGHT);
     world.change_pixel(0, Id::Sand);
-    world.change_pixel(5, Id::Sand);
+    world.change_pixel(5, Id::Water);
 
     for x in 0..WIDTH + 32 {
         if let Some(p) = lfisiks::point_to_buffer((x, x + 5), WIDTH, HEIGHT) {
@@ -40,8 +47,11 @@ fn main() {
         if let Some((x, y)) = window.get_mouse_pos(MouseMode::Discard) {
             if let Some(p) = lfisiks::point_to_buffer((x as usize, y as usize), WIDTH, HEIGHT) {
                 if window.get_mouse_down(MouseButton::Left) {
-                    world.change_pixel(p, Id::Sand);
-                    buffer[p] = 0x00ff00ff;
+                    match paint {
+                        Paint::Sand => world.change_pixel(p, Id::Sand),
+                        Paint::Water => world.change_pixel(p, Id::Water),
+                        Paint::Stone => world.change_pixel(p, Id::Stone),
+                    }
                 }
 
                 if window.get_mouse_down(MouseButton::Right) {
@@ -49,6 +59,32 @@ fn main() {
                 }
             }
         }
+
+        window
+            .get_keys_pressed(minifb::KeyRepeat::No)
+            .iter()
+            .for_each(|key| match key {
+                Key::W => paint = Paint::Water,
+                Key::T => paint = Paint::Stone,
+                Key::S => paint = Paint::Sand,
+                _ => (),
+            });
+
+        // if let Some(m) = window
+        //     .get_keys_pressed(minifb::KeyRepeat::No)
+        //     .iter()
+        //     .for_each(|key| {
+        //         match key {
+        //             Key::W => return Some(Paint::Water),
+        //             Key::T => return Some(Paint::Stone),
+        //             Key::S => return Some(Paint::Sand),
+        //             _ => (),
+        //         };
+        //         return None;
+        //     })
+        // {
+        //     paint = m;
+        // }
 
         if let Some(p) = lfisiks::point_to_buffer((6, 3), WIDTH, HEIGHT) {
             buffer[p] = 0x00FFFFFF;

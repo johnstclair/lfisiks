@@ -14,6 +14,7 @@ pub enum Id {
     Empty,
     Sand,
     Stone,
+    Water,
 }
 
 pub struct World {
@@ -38,12 +39,12 @@ impl World {
         for i in (0..self.buffer.len()).rev() {
             match self.buffer[i].id() {
                 Id::Sand => (),
+                Id::Water => (),
                 _ => continue,
             }
             if let Some(p) = &self.buffer[i].update(&*self) {
                 if let Some(b1) = point_to_buffer(*p, self.cols, self.rows) {
-                    println!("{b1} {i}");
-                    self.id_lize();
+                    self.buffer[b1].set_pos(buffer_to_point(i, self.cols));
                     self.buffer[i].set_pos(*p);
                     self.buffer.swap(b1, i);
                 }
@@ -67,6 +68,7 @@ impl World {
             Id::Empty => Box::new(Empty::new(pos)),
             Id::Sand => Box::new(Sand::new(pos)),
             Id::Stone => Box::new(Stone::new(pos)),
+            Id::Water => Box::new(Water::new(pos)),
         }
     }
 
@@ -86,6 +88,7 @@ impl World {
                 Id::Empty => print!("E"),
                 Id::Sand => print!("S"),
                 Id::Stone => print!("T"),
+                Id::Water => print!("W"),
             }
         }
         println!("");
@@ -152,10 +155,76 @@ impl Pixel for Sand {
         if let Some(Id::Empty) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
             return Some((self.pos.0, self.pos.1 + 1));
         }
+        if let Some(Id::Empty) =
+            world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1))
+        {
+            if let Some(Id::Empty) =
+                world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1 + 1))
+            {
+                return Some((self.pos.0 - 1, self.pos.1 + 1));
+            }
+        }
+        if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1)) {
+            if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1 + 1)) {
+                return Some((self.pos.0 + 1, self.pos.1 + 1));
+            }
+        }
         None
     }
     fn id(&self) -> Id {
         Id::Sand
+    }
+    fn set_pos(&mut self, pos: (usize, usize)) -> (usize, usize) {
+        self.pos = pos;
+        pos
+    }
+    fn get_pos(&self) -> (usize, usize) {
+        self.pos
+    }
+    fn get_color(&self) -> u32 {
+        self.color
+    }
+}
+
+pub struct Water {
+    pos: (usize, usize),
+    color: u32,
+}
+
+impl Water {
+    pub fn new(pos: (usize, usize)) -> Water {
+        Water {
+            pos,
+            color: 0x00408aed,
+        }
+    }
+}
+
+impl Pixel for Water {
+    fn update(&self, world: &World) -> Option<(usize, usize)> {
+        if let Some(Id::Empty) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
+            return Some((self.pos.0, self.pos.1 + 1));
+        }
+        if let Some(Id::Empty) =
+            world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1))
+        {
+            if let Some(Id::Empty) =
+                world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1 + 1))
+            {
+                return Some((self.pos.0 - 1, self.pos.1 + 1));
+            }
+            return Some((self.pos.0 - 1, self.pos.1));
+        }
+        if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1)) {
+            if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1 + 1)) {
+                return Some((self.pos.0 + 1, self.pos.1 + 1));
+            }
+            return Some((self.pos.0 + 1, self.pos.1));
+        }
+        None
+    }
+    fn id(&self) -> Id {
+        Id::Water
     }
     fn set_pos(&mut self, pos: (usize, usize)) -> (usize, usize) {
         self.pos = pos;
