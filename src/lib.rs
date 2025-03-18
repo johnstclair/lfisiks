@@ -17,6 +17,17 @@ pub enum Id {
     Water,
 }
 
+impl Id {
+    pub fn density(id: Id) -> u32 {
+        match id {
+            Id::Water => 2,
+            Id::Empty => 0,
+            Id::Sand => 10,
+            Id::Stone => 20,
+        }
+    }
+}
+
 pub struct World {
     cols: usize,
     rows: usize,
@@ -173,8 +184,10 @@ impl Sand {
 
 impl Pixel for Sand {
     fn update(&self, world: &World) -> Option<(usize, usize)> {
-        if let Some(Id::Empty) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
-            return Some((self.pos.0, self.pos.1 + 1));
+        if let Some(id) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
+            if Id::density(id) < Id::density(Id::Sand) {
+                return Some((self.pos.0, self.pos.1 + 1));
+            }
         }
         if let Some(Id::Empty) =
             world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1))
