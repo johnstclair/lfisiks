@@ -36,16 +36,25 @@ impl World {
     }
 
     pub fn update(&mut self) {
+        println!("---------------------");
+        for i in self.buffer.iter_mut() {
+            i.set_updated(false);
+        }
+
         for i in (0..self.buffer.len()).rev() {
             match self.buffer[i].id() {
                 Id::Sand => (),
                 Id::Water => (),
                 _ => continue,
             }
+            if self.buffer[i].get_updated() {
+                continue;
+            }
             if let Some(p) = &self.buffer[i].update(&*self) {
                 if let Some(b1) = point_to_buffer(*p, self.cols, self.rows) {
                     self.buffer[b1].set_pos(buffer_to_point(i, self.cols));
                     self.buffer[i].set_pos(*p);
+                    self.buffer[i].set_updated(true);
                     self.buffer.swap(b1, i);
                 }
             }
@@ -100,12 +109,15 @@ pub trait Pixel {
     fn id(&self) -> Id;
     fn set_pos(&mut self, pos: (usize, usize)) -> (usize, usize);
     fn get_pos(&self) -> (usize, usize);
+    fn set_updated(&mut self, update: bool);
+    fn get_updated(&self) -> bool;
     fn get_color(&self) -> u32;
 }
 
 pub struct Empty {
     pos: (usize, usize),
     color: u32,
+    updated: bool,
 }
 
 impl Empty {
@@ -113,6 +125,7 @@ impl Empty {
         Empty {
             pos,
             color: 0x00000000,
+            updated: false,
         }
     }
 }
@@ -131,6 +144,12 @@ impl Pixel for Empty {
     fn get_pos(&self) -> (usize, usize) {
         self.pos
     }
+    fn set_updated(&mut self, update: bool) {
+        self.updated = update;
+    }
+    fn get_updated(&self) -> bool {
+        self.updated
+    }
     fn get_color(&self) -> u32 {
         self.color
     }
@@ -139,6 +158,7 @@ impl Pixel for Empty {
 pub struct Sand {
     pos: (usize, usize),
     color: u32,
+    updated: bool,
 }
 
 impl Sand {
@@ -146,6 +166,7 @@ impl Sand {
         Sand {
             pos,
             color: 0x00ffc433,
+            updated: false,
         }
     }
 }
@@ -181,6 +202,12 @@ impl Pixel for Sand {
     fn get_pos(&self) -> (usize, usize) {
         self.pos
     }
+    fn set_updated(&mut self, update: bool) {
+        self.updated = update;
+    }
+    fn get_updated(&self) -> bool {
+        self.updated
+    }
     fn get_color(&self) -> u32 {
         self.color
     }
@@ -189,6 +216,7 @@ impl Pixel for Sand {
 pub struct Water {
     pos: (usize, usize),
     color: u32,
+    updated: bool,
 }
 
 impl Water {
@@ -196,6 +224,7 @@ impl Water {
         Water {
             pos,
             color: 0x00408aed,
+            updated: false,
         }
     }
 }
@@ -233,6 +262,12 @@ impl Pixel for Water {
     fn get_pos(&self) -> (usize, usize) {
         self.pos
     }
+    fn set_updated(&mut self, update: bool) {
+        self.updated = update;
+    }
+    fn get_updated(&self) -> bool {
+        self.updated
+    }
     fn get_color(&self) -> u32 {
         self.color
     }
@@ -241,6 +276,7 @@ impl Pixel for Water {
 pub struct Stone {
     pos: (usize, usize),
     color: u32,
+    updated: bool,
 }
 
 impl Stone {
@@ -248,6 +284,7 @@ impl Stone {
         Stone {
             pos,
             color: 0x00888888,
+            updated: false,
         }
     }
 }
@@ -265,6 +302,12 @@ impl Pixel for Stone {
     }
     fn get_pos(&self) -> (usize, usize) {
         self.pos
+    }
+    fn set_updated(&mut self, update: bool) {
+        self.updated = update;
+    }
+    fn get_updated(&self) -> bool {
+        self.updated
     }
     fn get_color(&self) -> u32 {
         self.color
