@@ -1,10 +1,10 @@
 use minifb::{Key, MouseButton, MouseMode, Scale, ScaleMode, Window, WindowOptions};
 // use std::{thread, time::Duration};
 
-use lfisiks;
+use lfisiks::Id;
 
 const WIDTH: usize = 10;
-const HEIGHT: usize = 30;
+const HEIGHT: usize = 8;
 
 fn main() {
     let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
@@ -14,7 +14,7 @@ fn main() {
         WIDTH,
         HEIGHT,
         WindowOptions {
-            scale: Scale::X32,
+            scale: Scale::X16,
             scale_mode: ScaleMode::AspectRatioStretch,
             ..WindowOptions::default()
         },
@@ -27,27 +27,27 @@ fn main() {
     window.set_target_fps(60);
 
     let mut world = lfisiks::World::new(WIDTH, HEIGHT);
-    world.change_pixel(0, lfisiks::Id::Sand);
-    world.id_lize();
+    world.change_pixel(0, Id::Sand);
+
+    for x in 0..WIDTH + 32 {
+        if let Some(p) = lfisiks::point_to_buffer((x, x + 5), WIDTH, HEIGHT) {
+            world.change_pixel(p, Id::Stone);
+        }
+    }
 
     const SAND: u32 = 0x00ffc433;
     const EMPTY: u32 = 0x00000000;
-
-    for i in 0..HEIGHT * WIDTH {
-        println!("{:?}", lfisiks::buffer_to_point(i, WIDTH));
-    }
-
-    println!("{:?}", lfisiks::point_to_buffer((6, 3), WIDTH, HEIGHT));
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         if let Some((x, y)) = window.get_mouse_pos(MouseMode::Discard) {
             if let Some(p) = lfisiks::point_to_buffer((x as usize, y as usize), WIDTH, HEIGHT) {
                 if window.get_mouse_down(MouseButton::Left) {
-                    buffer[p] = SAND;
+                    world.change_pixel(p, Id::Sand);
+                    buffer[p] = 0x00ff00ff;
                 }
 
                 if window.get_mouse_down(MouseButton::Right) {
-                    buffer[p] = EMPTY;
+                    world.change_pixel(p, Id::Empty);
                 }
             }
         }
@@ -56,17 +56,8 @@ fn main() {
             buffer[p] = 0x00FFFFFF;
         }
 
-        for x in 0..WIDTH + 32 {
-            if let Some(p) = lfisiks::point_to_buffer((x, x), WIDTH, HEIGHT) {
-                buffer[p] = 0x0000FF00;
-            }
-        }
-
-        // let mut p: usize = WIDTH * HEIGHT;
-        for i in buffer.iter_mut().rev() {
-            // p -= 1;
-            if *i == SAND {}
-        }
+        buffer = world.buffer();
+        world = world.update();
 
         // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
         window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
