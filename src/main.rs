@@ -29,7 +29,7 @@ fn main() {
         panic!("{}", e);
     });
 
-    window.set_target_fps(30);
+    window.set_target_fps(60);
 
     let mut paint = Paint::Sand;
 
@@ -60,6 +60,7 @@ fn main() {
             }
         }
 
+        // world.id_lize();
         window
             .get_keys_pressed(minifb::KeyRepeat::No)
             .iter()

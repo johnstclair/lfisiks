@@ -26,6 +26,9 @@ impl Id {
             Id::Stone => 20,
         }
     }
+    pub fn greater_density(id1: Id, id2: Id) -> bool {
+        Self::density(id1) > Self::density(id2)
+    }
 }
 
 pub struct World {
@@ -97,21 +100,30 @@ impl World {
     }
 
     pub fn id_lize(&self) {
-        let mut counter = 1;
+        // let mut counter = 1;
+        let mut e = 0;
+        let mut w = 0;
+        let mut s = 0;
+        let mut t = 0;
         println!("--------");
         for i in &self.buffer {
-            if counter == i.get_pos().1 {
-                counter += 1;
-                println!("");
-            }
+            // if counter == i.get_pos().1 {
+            //     counter += 1;
+            //     println!("");
+            // }
             match i.id() {
-                Id::Empty => print!("E"),
-                Id::Sand => print!("S"),
-                Id::Stone => print!("T"),
-                Id::Water => print!("W"),
+                Id::Empty => e += 1,
+                Id::Sand => s += 1,
+                Id::Stone => t += 1,
+                Id::Water => w += 1,
+                // Id::Empty => print!("E"),
+                // Id::Sand => print!("S"),
+                // Id::Stone => print!("T"),
+                // Id::Water => print!("W"),
             }
+            println!("E{e} S{s} T{t} W{w}");
         }
-        println!("");
+        // println!("");
     }
 }
 
@@ -185,22 +197,28 @@ impl Sand {
 impl Pixel for Sand {
     fn update(&self, world: &World) -> Option<(usize, usize)> {
         if let Some(id) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
-            if Id::density(id) < Id::density(Id::Sand) {
+            if Id::greater_density(self.id(), id) {
                 return Some((self.pos.0, self.pos.1 + 1));
             }
         }
-        if let Some(Id::Empty) =
-            world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1))
-        {
-            if let Some(Id::Empty) =
-                world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1 + 1))
-            {
-                return Some((self.pos.0 - 1, self.pos.1 + 1));
+        if let Some(id) = world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1)) {
+            if Id::greater_density(self.id(), id) {
+                if let Some(id) =
+                    world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1 + 1))
+                {
+                    if Id::greater_density(self.id(), id) {
+                        return Some((self.pos.0 - 1, self.pos.1 + 1));
+                    }
+                }
             }
         }
-        if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1)) {
-            if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1 + 1)) {
-                return Some((self.pos.0 + 1, self.pos.1 + 1));
+        if let Some(id) = world.get_id_of((self.pos.0 + 1, self.pos.1)) {
+            if Id::greater_density(self.id(), id) {
+                if let Some(id) = world.get_id_of((self.pos.0 + 1, self.pos.1 + 1)) {
+                    if Id::greater_density(self.id(), id) {
+                        return Some((self.pos.0 + 1, self.pos.1 + 1));
+                    }
+                }
             }
         }
         None
