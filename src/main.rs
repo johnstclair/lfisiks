@@ -3,8 +3,8 @@ use minifb::{Key, MouseButton, MouseMode, Scale, ScaleMode, Window, WindowOption
 
 use lfisiks::Id;
 
-const WIDTH: usize = 100;
-const HEIGHT: usize = 100;
+const WIDTH: usize = 60;
+const HEIGHT: usize = 60;
 
 pub enum Paint {
     Sand,
@@ -86,10 +86,6 @@ fn main() {
         // {
         //     paint = m;
         // }
-
-        if let Some(p) = lfisiks::point_to_buffer((6, 3), WIDTH, HEIGHT) {
-            buffer[p] = 0x00FFFFFF;
-        }
 
         buffer = world.buffer();
         world.update();

@@ -99,6 +99,15 @@ impl World {
         self.buffer[p] = Self::create_pixel(id, buffer_to_point(p, self.cols));
     }
 
+    pub fn check_direction(&self, id: Id, pos: (usize,usize), dir: (isize,isize)) -> Option<(usize,usize)> {
+        if let Some(target) = self.get_id_of(((pos.0 as isize + dir.0).max(0) as usize, (pos.1 as isize + dir.1).max(0) as usize )) {
+            if Id::greater_density(id, target) {
+                return Some(((pos.0 as isize + dir.0).max(0) as usize, (pos.1 as isize + dir.1).max(0) as usize));
+            }
+        }
+        None
+    }
+
     pub fn id_lize(&self) {
         // let mut counter = 1;
         let mut e = 0;
@@ -147,7 +156,7 @@ impl Empty {
     pub fn new(pos: (usize, usize)) -> Empty {
         Empty {
             pos,
-            color: 0x00000000,
+            color: 0x00202020,
             updated: false,
         }
     }
@@ -196,29 +205,17 @@ impl Sand {
 
 impl Pixel for Sand {
     fn update(&self, world: &World) -> Option<(usize, usize)> {
-        if let Some(id) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
-            if Id::greater_density(self.id(), id) {
-                return Some((self.pos.0, self.pos.1 + 1));
+        if let Some(target) = world.check_direction(self.id(), self.pos, (0,1)) {
+            return Some((target.0, target.1));
+        }
+        if let Some(target) = world.check_direction(self.id(), self.pos, (-1,0)) {
+            if let Some(target) = world.check_direction(self.id(), self.pos, (-1,1)) {
+                return Some((target.0, target.1));
             }
         }
-        if let Some(id) = world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1)) {
-            if Id::greater_density(self.id(), id) {
-                if let Some(id) =
-                    world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1 + 1))
-                {
-                    if Id::greater_density(self.id(), id) {
-                        return Some((self.pos.0 - 1, self.pos.1 + 1));
-                    }
-                }
-            }
-        }
-        if let Some(id) = world.get_id_of((self.pos.0 + 1, self.pos.1)) {
-            if Id::greater_density(self.id(), id) {
-                if let Some(id) = world.get_id_of((self.pos.0 + 1, self.pos.1 + 1)) {
-                    if Id::greater_density(self.id(), id) {
-                        return Some((self.pos.0 + 1, self.pos.1 + 1));
-                    }
-                }
+        if let Some(target) = world.check_direction(self.id(), self.pos, (1,0)) {
+            if let Some(target) = world.check_direction(self.id(), self.pos, (1,1)) {
+                return Some((target.0, target.1));
             }
         }
         None
@@ -262,29 +259,49 @@ impl Water {
 
 impl Pixel for Water {
     fn update(&self, world: &World) -> Option<(usize, usize)> {
-        if let Some(Id::Empty) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
-            return Some((self.pos.0, self.pos.1 + 1));
+        if let Some(target) = world.check_direction(self.id(), self.pos, (0,1)) {
+            return Some((target.0, target.1));
         }
-        if let Some(Id::Empty) =
-            world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1))
-        {
-            if let Some(Id::Empty) =
-                world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1 + 1))
-            {
-                return Some((self.pos.0 - 1, self.pos.1 + 1));
+        if let Some(target) = world.check_direction(self.id(), self.pos, (-1,0)) {
+            if let Some(target) = world.check_direction(self.id(), self.pos, (-1,1)) {
+                return Some((target.0, target.1));
             }
             let mut offset = 2;
-            while let Some(Id::Empty) =
-                world.get_id_of(((self.pos.0 as i32 - offset).max(0) as usize, self.pos.1))
-            {
-                if let Some(Id::Empty) =
-                    world.get_id_of(((self.pos.0 as i32 - offset).max(0) as usize, self.pos.1 + 1))
-                {
-                    return Some((self.pos.0 - 1, self.pos.1));
+            while let Some(target) = world.check_direction(self.id(), self.pos, (-1,0)) {
+                if let Some(target) = world.check_direction(self.id(), self.pos, (-1,1)) {
+                    return Some((target.0, target.1));
                 }
                 offset += 1;
             }
         }
+        if let Some(target) = world.check_direction(self.id(), self.pos, (1,0)) {
+            if let Some(target) = world.check_direction(self.id(), self.pos, (1,1)) {
+                return Some((target.0, target.1));
+            }
+        }
+        if let Some(Id::Empty) = world.get_id_of((self.pos.0, self.pos.1 + 1)) {
+            return Some((self.pos.0, self.pos.1 + 1));
+        }
+        //if let Some(Id::Empty) =
+        //    world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1))
+        //{
+        //    if let Some(Id::Empty) =
+        //        world.get_id_of(((self.pos.0 as i32 - 1).max(0) as usize, self.pos.1 + 1))
+        //    {
+        //        return Some((self.pos.0 - 1, self.pos.1 + 1));
+        //    }
+        //    let mut offset = 2;
+        //    while let Some(Id::Empty) =
+        //        world.get_id_of(((self.pos.0 as i32 - offset).max(0) as usize, self.pos.1))
+        //    {
+        //        if let Some(Id::Empty) =
+        //            world.get_id_of(((self.pos.0 as i32 - offset).max(0) as usize, self.pos.1 + 1))
+        //        {
+        //            return Some((self.pos.0 - 1, self.pos.1));
+        //        }
+        //        offset += 1;
+        //    }
+        //}
         if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1)) {
             if let Some(Id::Empty) = world.get_id_of((self.pos.0 + 1, self.pos.1 + 1)) {
                 return Some((self.pos.0 + 1, self.pos.1 + 1));
