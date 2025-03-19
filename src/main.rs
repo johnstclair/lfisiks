@@ -29,19 +29,11 @@ fn main() {
         panic!("{}", e);
     });
 
-    window.set_target_fps(30);
+    window.set_target_fps(60);
 
     let mut paint = Paint::Sand;
 
     let mut world = lfisiks::World::new(WIDTH, HEIGHT);
-    world.change_pixel(0, Id::Sand);
-    world.change_pixel(5, Id::Water);
-
-    for x in 0..WIDTH + 32 {
-        if let Some(p) = lfisiks::point_to_buffer((x, x + 5), WIDTH, HEIGHT) {
-            world.change_pixel(p, Id::Stone);
-        }
-    }
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         if let Some((x, y)) = window.get_mouse_pos(MouseMode::Discard) {
