@@ -3,8 +3,8 @@ use minifb::{Key, MouseButton, MouseMode, Scale, ScaleMode, Window, WindowOption
 
 use lfisiks::Id;
 
-const WIDTH: usize = 60;
-const HEIGHT: usize = 60;
+const WIDTH: usize = 200;
+const HEIGHT: usize = 200;
 
 pub enum Paint {
     Sand,
@@ -13,14 +13,14 @@ pub enum Paint {
 }
 
 fn main() {
-    let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
+    let mut buffer: Vec<u32>;
 
     let mut window = Window::new(
         "Test - ESC to exit",
         WIDTH,
         HEIGHT,
         WindowOptions {
-            scale: Scale::X16,
+            scale: Scale::X4,
             scale_mode: ScaleMode::AspectRatioStretch,
             ..WindowOptions::default()
         },
@@ -29,7 +29,7 @@ fn main() {
         panic!("{}", e);
     });
 
-    window.set_target_fps(60);
+    window.set_target_fps(30);
 
     let mut paint = Paint::Sand;
 
@@ -60,7 +60,7 @@ fn main() {
             }
         }
 
-        // world.id_lize();
+        world.id_lize();
         window
             .get_keys_pressed(minifb::KeyRepeat::No)
             .iter()
