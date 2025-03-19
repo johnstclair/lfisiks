@@ -81,7 +81,6 @@ impl World {
                             self.buffer[target_buffer].set_pos(buffer_to_point(b1, self.cols));
                             self.buffer.swap(b1, target_buffer);
                         }
-                        println!("moving left");
                     }
                     if let Some(b1_target) = self.check_direction(
                         Id::density(self.buffer[b1].id()),
@@ -95,14 +94,13 @@ impl World {
                             self.buffer[target_buffer].set_pos(buffer_to_point(b1, self.cols));
                             self.buffer.swap(b1, target_buffer);
                         }
-                        println!("moving left");
                     }
                     if self.buffer[b1].get_pos() == b1_original_pos {
                         self.buffer[b1].set_pos(buffer_to_point(i, self.cols));
                     }
                     self.buffer[i].set_pos(*p);
+                    //self.buffer[i].set_updated(true);
                     self.buffer.swap(b1, i);
-                    self.buffer[i].set_updated(true);
                 }
             }
         }
@@ -313,16 +311,16 @@ impl Pixel for Water {
             if let Some(target) = world.check_direction(Id::density(self.id()), self.pos, (-1, 1)) {
                 return Some((target.0, target.1));
             }
-            let mut offset = 2;
+            let mut offset = -1;
             while let Some(_target) =
-                world.check_direction(Id::density(self.id()) /*+ 1*/, self.pos, (-offset, 0))
+                world.check_direction(Id::density(self.id()) + 1, self.pos, (offset, 0))
             {
                 if let Some(target) =
-                    world.check_direction(Id::density(self.id()), self.pos, (-offset, 1))
+                    world.check_direction(Id::density(self.id()), self.pos, (offset, 1))
                 {
                     return Some((self.pos.0 - 1, self.pos.1));
                 }
-                offset += 1;
+                offset -= 1;
             }
         }
         if let Some(_target) = world.check_direction(Id::density(self.id()), self.pos, (1, 0)) {
@@ -331,7 +329,7 @@ impl Pixel for Water {
             }
             let mut offset = 2;
             while let Some(_target) =
-                world.check_direction(Id::density(self.id()) /*+ 1*/, self.pos, (offset, 0))
+                world.check_direction(Id::density(self.id()) + 1, self.pos, (offset, 0))
             {
                 if let Some(target) =
                     world.check_direction(Id::density(self.id()), self.pos, (offset, 1))
