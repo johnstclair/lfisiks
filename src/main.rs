@@ -3,8 +3,8 @@ use minifb::{Key, MouseButton, MouseMode, Scale, ScaleMode, Window, WindowOption
 
 use lfisiks::Id;
 
-const WIDTH: usize = 200;
-const HEIGHT: usize = 200;
+const WIDTH: usize = 30;
+const HEIGHT: usize = 80;
 
 pub enum Paint {
     Sand,
@@ -20,7 +20,7 @@ fn main() {
         WIDTH,
         HEIGHT,
         WindowOptions {
-            scale: Scale::X4,
+            scale: Scale::X16,
             scale_mode: ScaleMode::AspectRatioStretch,
             ..WindowOptions::default()
         },
@@ -60,7 +60,7 @@ fn main() {
             }
         }
 
-        world.id_lize();
+        // world.id_lize();
         window
             .get_keys_pressed(minifb::KeyRepeat::No)
             .iter()

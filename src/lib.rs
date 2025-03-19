@@ -1,3 +1,5 @@
+use rand::Rng;
+
 pub fn point_to_buffer(p: (usize, usize), cols: usize, rows: usize) -> Option<usize> {
     let (x, y): (usize, usize) = p;
     if x >= cols || y >= rows {
@@ -242,7 +244,7 @@ impl Sand {
     pub fn new(pos: (usize, usize)) -> Sand {
         Sand {
             pos,
-            color: 0x00ffc433,
+            color: 0x00ffc433 + rand::rng().random_range(0..128) - 255,
             updated: false,
         }
     }
@@ -296,7 +298,7 @@ impl Water {
     pub fn new(pos: (usize, usize)) -> Water {
         Water {
             pos,
-            color: 0x00408aed,
+            color: 0x00408aed + rand::rng().random_range(0..48) - 96,
             updated: false,
         }
     }
