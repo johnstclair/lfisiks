@@ -2,8 +2,8 @@ use minifb::{Key, MouseButton, MouseMode, Scale, ScaleMode, Window, WindowOption
 
 use lfisiks::Id;
 
-const WIDTH: usize = 40;
-const HEIGHT: usize = 60;
+const WIDTH: usize = 60;
+const HEIGHT: usize = 40;
 
 pub enum Paint {
     Sand,
