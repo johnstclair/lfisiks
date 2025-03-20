@@ -151,33 +151,6 @@ impl World {
         }
         None
     }
-
-    pub fn id_lize(&self) {
-        let mut counter = 1;
-        let mut e = 0;
-        let mut w = 0;
-        let mut s = 0;
-        let mut t = 0;
-        println!("--------");
-        for i in &self.buffer {
-            if counter == i.get_pos().1 {
-                counter += 1;
-                println!("");
-            }
-            match i.id() {
-                Id::Empty => e += 1,
-                Id::Sand => s += 1,
-                Id::Stone => t += 1,
-                Id::Water => w += 1,
-                // Id::Empty => print!("E"),
-                // Id::Sand => print!("S"),
-                // Id::Stone => print!("T"),
-                // Id::Water => print!("W"),
-            }
-            println!("E{e} S{s} T{t} W{w}");
-        }
-        // println!("");
-    }
 }
 
 pub trait Pixel {

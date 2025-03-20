@@ -1,5 +1,4 @@
 use minifb::{Key, MouseButton, MouseMode, Scale, ScaleMode, Window, WindowOptions};
-// use std::{thread, time::Duration};
 
 use lfisiks::Id;
 
@@ -52,7 +51,6 @@ fn main() {
             }
         }
 
-        // world.id_lize();
         window
             .get_keys_pressed(minifb::KeyRepeat::No)
             .iter()
@@ -63,26 +61,9 @@ fn main() {
                 _ => (),
             });
 
-        // if let Some(m) = window
-        //     .get_keys_pressed(minifb::KeyRepeat::No)
-        //     .iter()
-        //     .for_each(|key| {
-        //         match key {
-        //             Key::W => return Some(Paint::Water),
-        //             Key::T => return Some(Paint::Stone),
-        //             Key::S => return Some(Paint::Sand),
-        //             _ => (),
-        //         };
-        //         return None;
-        //     })
-        // {
-        //     paint = m;
-        // }
-
         buffer = world.buffer();
         world.update();
 
-        // We unwrap here as we want this code to exit if it fails. Real applications may want to handle this in a different way
         window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
     }
 }
