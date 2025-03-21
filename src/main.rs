@@ -2,14 +2,8 @@ use minifb::{Key, MouseButton, MouseMode, Scale, ScaleMode, Window, WindowOption
 
 use lfisiks::Id;
 
-const WIDTH: usize = 60;
-const HEIGHT: usize = 40;
-
-pub enum Paint {
-    Sand,
-    Water,
-    Stone,
-}
+const WIDTH: usize = 200;
+const HEIGHT: usize = 100;
 
 fn main() {
     let mut buffer: Vec<u32>;
@@ -19,7 +13,7 @@ fn main() {
         WIDTH,
         HEIGHT,
         WindowOptions {
-            scale: Scale::X16,
+            scale: Scale::X8,
             scale_mode: ScaleMode::AspectRatioStretch,
             ..WindowOptions::default()
         },
@@ -28,26 +22,20 @@ fn main() {
         panic!("{}", e);
     });
 
-    window.set_target_fps(60);
+    window.set_target_fps(120);
 
-    let mut paint = Paint::Sand;
+    let mut brush = lfisiks::Brush::new(2);
 
     let mut world = lfisiks::World::new(WIDTH, HEIGHT);
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         if let Some((x, y)) = window.get_mouse_pos(MouseMode::Discard) {
-            if let Some(p) = lfisiks::point_to_buffer((x as usize, y as usize), WIDTH, HEIGHT) {
-                if window.get_mouse_down(MouseButton::Left) {
-                    match paint {
-                        Paint::Sand => world.change_pixel(p, Id::Sand),
-                        Paint::Water => world.change_pixel(p, Id::Water),
-                        Paint::Stone => world.change_pixel(p, Id::Stone),
-                    }
-                }
+            if window.get_mouse_down(MouseButton::Left) {
+                brush.draw((x as usize,y as usize), &mut world, false);
+            }
 
-                if window.get_mouse_down(MouseButton::Right) {
-                    world.change_pixel(p, Id::Empty);
-                }
+            if window.get_mouse_down(MouseButton::Right) {
+                brush.draw((x as usize,y as usize), &mut world, true);
             }
         }
 
@@ -55,9 +43,9 @@ fn main() {
             .get_keys_pressed(minifb::KeyRepeat::No)
             .iter()
             .for_each(|key| match key {
-                Key::W => paint = Paint::Water,
-                Key::T => paint = Paint::Stone,
-                Key::S => paint = Paint::Sand,
+                Key::W => brush.change_paint(lfisiks::Id::Water),
+                Key::T => brush.change_paint(lfisiks::Id::Stone),
+                Key::S => brush.change_paint(lfisiks::Id::Sand),
                 _ => (),
             });
 

@@ -1,4 +1,5 @@
 use rand::Rng;
+use std::borrow::Cow;
 
 pub fn point_to_buffer(p: (usize, usize), cols: usize, rows: usize) -> Option<usize> {
     let (x, y): (usize, usize) = p;
@@ -37,6 +38,42 @@ pub struct World {
     cols: usize,
     rows: usize,
     buffer: Vec<Box<dyn Pixel>>,
+}
+
+pub struct Brush {
+    size: usize,
+    paint: Id,
+}
+
+impl Brush {
+    pub fn new(size: usize) -> Brush {
+        Brush { size, paint: Id::Sand }
+    }
+
+    pub fn draw(&self, pos: (usize,usize), world: &mut World, empty: bool) {
+        let mut paint = &self.paint;
+
+        if empty {
+            paint = &Id::Empty;
+        }
+
+        for x in ((pos.0 as i32 - self.size as i32 / 2).max(0) as usize)..(pos.0 + self.size / 2) {
+            for y in ((pos.1 as i32 - self.size as i32 / 2).max(0) as usize)..(pos.1 + self.size / 2) {
+                if let Some(p) = point_to_buffer((x,y), world.cols, world.rows) {
+                    match paint {
+                        Id::Sand => world.change_pixel(p, Id::Sand),
+                        Id::Water => world.change_pixel(p, Id::Water),
+                        Id::Stone => world.change_pixel(p, Id::Stone),
+                        Id::Empty => world.change_pixel(p, Id::Empty),
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn change_paint(&mut self, id: Id) {
+        self.paint = id;
+    }
 }
 
 impl World {
